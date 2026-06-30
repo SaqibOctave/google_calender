@@ -1,0 +1,5 @@
+node_modules/
+.env
+schedular-501007-b83a2d8499a6.json
+appointment-booking-flow.json
+*.log
