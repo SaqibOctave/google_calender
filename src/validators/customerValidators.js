@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
-const getCnicQuerySchema = Joi.object({
+const getCnicBodySchema = Joi.object({
   cnic: Joi.string().length(13).pattern(/^\d{13}$/).required().messages({
     'string.length': 'CNIC must be exactly 13 digits',
     'string.pattern.base': 'CNIC must contain only digits',
@@ -8,6 +8,10 @@ const getCnicQuerySchema = Joi.object({
 });
 
 const updateCustomerSchema = Joi.object({
+  cnic: Joi.string().length(13).pattern(/^\d{13}$/).required().messages({
+    'string.length': 'CNIC must be exactly 13 digits',
+    'string.pattern.base': 'CNIC must contain only digits',
+  }),
   complete_name: Joi.string().min(2).max(100),
   mother_name: Joi.string().min(2).max(100),
   date_of_birth: Joi.string().isoDate(),
@@ -16,8 +20,6 @@ const updateCustomerSchema = Joi.object({
   cnic_expiry: Joi.string().isoDate(),
   card_pin: Joi.string().length(4).pattern(/^\d{4}$/),
   mobile_app_pin: Joi.string().length(4).pattern(/^\d{4}$/),
-}).min(1).messages({
-  'object.min': 'At least one field must be provided for update',
 });
 
-module.exports = { getCnicQuerySchema, updateCustomerSchema };
+module.exports = { getCnicBodySchema, updateCustomerSchema };

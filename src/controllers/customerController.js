@@ -18,48 +18,30 @@ const writeCustomers = (data) => {
 };
 
 const getCustomer = (req, res, next) => {
-  console.log('[getCustomer] Query params received:', req.query);
-  const { cnic } = req.query;
-  console.log('[getCustomer] Extracted CNIC:', cnic);
+  console.log('[getCustomer] Request body received:', req.body);
 
   const customers = readCustomers();
-  const customer = customers.find((c) => c.cnic === cnic);
-  console.log('[getCustomer] Match found:', customer ? `yes (id: ${customer.id})` : 'no');
+  const customer = customers[0];
+  console.log('[getCustomer] Returning first customer:', customer.id);
 
-  if (!customer) {
-    console.log('[getCustomer] No customer found for CNIC:', cnic, '— returning 404');
-    return next(new AppError(`Customer with CNIC ${cnic} not found`, 404));
-  }
-
-  console.log('[getCustomer] Returning customer:', customer.id);
   res.json({ success: true, data: customer });
 };
 
 const updateCustomer = (req, res, next) => {
-  console.log('[updateCustomer] Query params received:', req.query);
   console.log('[updateCustomer] Request body received:', req.body);
-  const { cnic } = req.query;
-  console.log('[updateCustomer] Extracted CNIC:', cnic);
+  const { cnic, ...updates } = req.body;
+  console.log('[updateCustomer] Fields to update:', updates);
 
   const customers = readCustomers();
-  const index = customers.findIndex((c) => c.cnic === cnic);
-  console.log('[updateCustomer] Customer index in array:', index);
-
-  if (index === -1) {
-    console.log('[updateCustomer] No customer found for CNIC:', cnic, '— returning 404');
-    return next(new AppError(`Customer with CNIC ${cnic} not found`, 404));
-  }
-
-  const before = { ...customers[index] };
-  customers[index] = { ...customers[index], ...req.body };
-  console.log('[updateCustomer] Fields changed:', Object.keys(req.body));
+  const before = { ...customers[0] };
+  customers[0] = { ...customers[0], ...updates };
   console.log('[updateCustomer] Before:', before);
-  console.log('[updateCustomer] After: ', customers[index]);
+  console.log('[updateCustomer] After: ', customers[0]);
 
   writeCustomers(customers);
-  console.log('[updateCustomer] Update complete for customer:', customers[index].id);
+  console.log('[updateCustomer] Update complete for customer:', customers[0].id);
 
-  res.json({ success: true, data: customers[index] });
+  res.json({ success: true, data: customers[0] });
 };
 
 module.exports = { getCustomer, updateCustomer };
