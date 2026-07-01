@@ -1,0 +1,62 @@
+[
+  {
+    "id": "cus-001",
+    "cnic": "3310559084647",
+    "complete_name": "Ahmed Raza Khan",
+    "mother_name": "Fatima Bibi",
+    "date_of_birth": "1990-03-15",
+    "card_number": "4111111111111111",
+    "card_expiry": "12/27",
+    "cnic_expiry": "2028-03-15",
+    "card_pin": "1234",
+    "mobile_app_pin": "5678"
+  },
+  {
+    "id": "cus-002",
+    "cnic": "4210198765432",
+    "complete_name": "Sara Malik",
+    "mother_name": "Zainab Malik",
+    "date_of_birth": "1985-07-22",
+    "card_number": "5500005555555559",
+    "card_expiry": "06/26",
+    "cnic_expiry": "2025-07-22",
+    "card_pin": "4321",
+    "mobile_app_pin": "8765"
+  },
+  {
+    "id": "cus-003",
+    "cnic": "6110155512343",
+    "complete_name": "Muhammad Usman",
+    "mother_name": "Khadija Begum",
+    "date_of_birth": "1995-11-08",
+    "card_number": "3400000000000009",
+    "card_expiry": "09/28",
+    "cnic_expiry": "2030-11-08",
+    "card_pin": "9876",
+    "mobile_app_pin": "1122"
+  },
+  {
+    "id": "cus-004",
+    "cnic": "5440077788994",
+    "complete_name": "Ayesha Siddiqui",
+    "mother_name": "Rukhsana Bano",
+    "date_of_birth": "1992-05-30",
+    "card_number": "6011000990139424",
+    "card_expiry": "03/27",
+    "cnic_expiry": "2027-05-30",
+    "card_pin": "3344",
+    "mobile_app_pin": "9900"
+  },
+  {
+    "id": "cus-005",
+    "cnic": "3740533322115",
+    "complete_name": "Bilal Hussain",
+    "mother_name": "Nasreen Akhtar",
+    "date_of_birth": "1988-09-12",
+    "card_number": "3569990000000009",
+    "card_expiry": "11/26",
+    "cnic_expiry": "2029-09-12",
+    "card_pin": "7788",
+    "mobile_app_pin": "4455"
+  }
+]

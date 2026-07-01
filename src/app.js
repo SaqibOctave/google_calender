@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 
 const appointmentRoutes = require('./routes/appointmentRoutes');
+const customerRoutes = require('./routes/customerRoutes');
 const errorHandler = require('./middleware/errorHandler');
 const AppError = require('./utils/AppError');
 const env = require('./config/env');
@@ -18,6 +19,7 @@ app.use(morgan(env.nodeEnv === 'production' ? 'combined' : 'dev'));
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 app.use('/api/appointments', appointmentRoutes);
+app.use('/api/customers', customerRoutes);
 
 app.use((req, res, next) => next(new AppError(`Route not found: ${req.method} ${req.originalUrl}`, 404)));
 
