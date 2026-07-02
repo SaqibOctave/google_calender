@@ -1,10 +1,12 @@
 const express = require('express');
 const controller = require('../controllers/customerController');
 const asyncHandler = require('../utils/asyncHandler');
+const { validateBody } = require('../middleware/validate');
+const { getCnicBodySchema, updateCustomerSchema } = require('../validators/customerValidators');
 
 const router = express.Router();
 
-router.post('/', (req, res, next) => { console.log('[POST /api/customers] body:', req.body); next(); }, asyncHandler(controller.getCustomer));
-router.patch('/', asyncHandler(controller.updateCustomer));
+router.post('/', validateBody(getCnicBodySchema), asyncHandler(controller.getCustomer));
+router.patch('/', validateBody(updateCustomerSchema), asyncHandler(controller.updateCustomer));
 
 module.exports = router;

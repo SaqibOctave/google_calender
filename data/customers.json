@@ -8,7 +8,20 @@
     "card_number": "4111111111111111",
     "card_expiry": "06/29",
     "cnic_expiry": "2028-03-15",
-    "card_pin": "0500",
+    "card_pin": "1011",
+    "mobile_app_pin": "5622",
+    "balance": 1001.5
+  },
+  {
+    "id": "cus-002",
+    "cnic": "1234567654321",
+    "complete_name": "Octavebytes",
+    "mother_name": "octacore",
+    "date_of_birth": "2021-03-15",
+    "card_number": "4111111111111111",
+    "card_expiry": "06/29",
+    "cnic_expiry": "2028-03-15",
+    "card_pin": "1011",
     "mobile_app_pin": "5622",
     "balance": 1001.5
   }

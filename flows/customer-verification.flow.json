@@ -1,0 +1,458 @@
+{
+  "$id": "https://flows.pipecat.ai/schema/flow.json",
+  "meta": {
+    "name": "Customer Verification Flow",
+    "version": "0.1.0"
+  },
+  "nodes": [
+    {
+      "id": "initial",
+      "type": "initial",
+      "position": { "x": 100, "y": 300 },
+      "data": {
+        "label": "Initial",
+        "type": "initial",
+        "role_messages": [
+          {
+            "role": "system",
+            "content": "You are a secure banking assistant. Verify the customer's identity step by step before providing any services. Never reveal account details until full verification is complete. Only call a function when the user has provided the required information — never call a function before the user responds."
+          }
+        ],
+        "task_messages": [
+          {
+            "role": "system",
+            "content": "Greet the customer warmly and ask them to provide their 13-digit CNIC number (digits only, no dashes) to begin identity verification."
+          }
+        ],
+        "functions": [
+          {
+            "name": "submit_cnic",
+            "description": "Customer has provided their CNIC number",
+            "properties": {
+              "cnic": {
+                "type": "string",
+                "description": "The 13-digit CNIC number provided by the customer, digits only with no dashes"
+              }
+            },
+            "required": ["cnic"],
+            "next_node_id": "fetch_customer"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fetch_customer",
+      "type": "http_request",
+      "position": { "x": 380, "y": 300 },
+      "data": {
+        "label": "Fetch Customer",
+        "type": "http_request",
+        "node_kind": "http_request",
+        "task_messages": [
+          {
+            "role": "system",
+            "content": "Call the available function to fetch the customer record, then continue based on the response."
+          }
+        ],
+        "functions": [
+          {
+            "name": "http_request",
+            "description": "Fetches customer data by CNIC from the API.",
+            "properties": {
+              "proceed": {
+                "type": "boolean",
+                "description": "Set to true to proceed with this step."
+              }
+            },
+            "required": ["proceed"],
+            "http": {
+              "method": "POST",
+              "url": "http://localhost:3000/api/customers",
+              "headers": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "query_params": [],
+              "body_mode": "json",
+              "body": "{\"cnic\": \"{{flow_manager.state.cnic}}\"}",
+              "timeout_seconds": 30,
+              "response_var": "customer"
+            },
+            "next_node_id": "verify_name"
+          }
+        ]
+      }
+    },
+    {
+      "id": "verify_name",
+      "type": "node",
+      "position": { "x": 660, "y": 150 },
+      "data": {
+        "label": "Verify Name",
+        "type": "node",
+        "task_messages": [
+          {
+            "role": "system",
+            "content": "Ask the customer to confirm their full name. Compare what they say with the name on record: {{customer.data.complete_name}}. The comparison must be case-insensitive. If the name matches, call name_matched. If it does not match, call name_failed."
+          }
+        ],
+        "functions": [
+          {
+            "name": "name_matched",
+            "description": "The name provided by the customer matches the record",
+            "properties": {
+              "provided_name": {
+                "type": "string",
+                "description": "The name the customer provided"
+              }
+            },
+            "required": ["provided_name"],
+            "next_node_id": "verify_mother_name"
+          },
+          {
+            "name": "name_failed",
+            "description": "The name provided by the customer does not match the record",
+            "properties": {
+              "provided_name": {
+                "type": "string",
+                "description": "The incorrect name the customer provided"
+              }
+            },
+            "required": ["provided_name"],
+            "next_node_id": "verification_failed"
+          }
+        ]
+      }
+    },
+    {
+      "id": "verify_mother_name",
+      "type": "node",
+      "position": { "x": 940, "y": 150 },
+      "data": {
+        "label": "Verify Mother Name",
+        "type": "node",
+        "task_messages": [
+          {
+            "role": "system",
+            "content": "Ask the customer to provide their mother's name. Compare what they say with the mother name on record: {{customer.data.mother_name}}. The comparison must be case-insensitive. If the name matches, call mother_name_matched. If it does not match, call mother_name_failed."
+          }
+        ],
+        "functions": [
+          {
+            "name": "mother_name_matched",
+            "description": "The mother name provided by the customer matches the record",
+            "properties": {
+              "provided_name": {
+                "type": "string",
+                "description": "The mother name the customer provided"
+              }
+            },
+            "required": ["provided_name"],
+            "next_node_id": "verify_dob"
+          },
+          {
+            "name": "mother_name_failed",
+            "description": "The mother name provided by the customer does not match the record",
+            "properties": {
+              "provided_name": {
+                "type": "string",
+                "description": "The incorrect mother name the customer provided"
+              }
+            },
+            "required": ["provided_name"],
+            "next_node_id": "verification_failed"
+          }
+        ]
+      }
+    },
+    {
+      "id": "verify_dob",
+      "type": "node",
+      "position": { "x": 1220, "y": 150 },
+      "data": {
+        "label": "Verify Date of Birth",
+        "type": "node",
+        "task_messages": [
+          {
+            "role": "system",
+            "content": "Ask the customer to provide their date of birth. Compare what they say with the date of birth on record: {{customer.data.date_of_birth}}. Accept any common date format (e.g. March 15 1990, 15/03/1990, 1990-03-15). If the date matches, call dob_matched. If it does not match, call dob_failed."
+          }
+        ],
+        "functions": [
+          {
+            "name": "dob_matched",
+            "description": "The date of birth provided by the customer matches the record",
+            "properties": {
+              "provided_dob": {
+                "type": "string",
+                "description": "The date of birth the customer provided"
+              }
+            },
+            "required": ["provided_dob"],
+            "next_node_id": "service_selection"
+          },
+          {
+            "name": "dob_failed",
+            "description": "The date of birth provided by the customer does not match the record",
+            "properties": {
+              "provided_dob": {
+                "type": "string",
+                "description": "The incorrect date of birth the customer provided"
+              }
+            },
+            "required": ["provided_dob"],
+            "next_node_id": "verification_failed"
+          }
+        ]
+      }
+    },
+    {
+      "id": "service_selection",
+      "type": "node",
+      "position": { "x": 1500, "y": 300 },
+      "data": {
+        "label": "Service Selection",
+        "type": "node",
+        "task_messages": [
+          {
+            "role": "system",
+            "content": "Inform the customer that their identity has been successfully verified. Ask them which service they need today: 1) Balance Inquiry, 2) ATM PIN Change, or 3) Mobile App PIN Change."
+          }
+        ],
+        "functions": [
+          {
+            "name": "select_balance_inquiry",
+            "description": "Customer wants to check their account balance",
+            "properties": {
+              "service": {
+                "type": "string",
+                "enum": ["balance_inquiry"],
+                "description": "The service selected by the customer"
+              }
+            },
+            "required": ["service"],
+            "next_node_id": "balance_inquiry"
+          },
+          {
+            "name": "select_atm_pin_change",
+            "description": "Customer wants to change their ATM card PIN",
+            "properties": {
+              "service": {
+                "type": "string",
+                "enum": ["atm_pin_change"],
+                "description": "The service selected by the customer"
+              }
+            },
+            "required": ["service"],
+            "next_node_id": "atm_pin_change"
+          },
+          {
+            "name": "select_mobile_pin_change",
+            "description": "Customer wants to change their mobile app PIN",
+            "properties": {
+              "service": {
+                "type": "string",
+                "enum": ["mobile_pin_change"],
+                "description": "The service selected by the customer"
+              }
+            },
+            "required": ["service"],
+            "next_node_id": "mobile_pin_change"
+          }
+        ]
+      }
+    },
+    {
+      "id": "balance_inquiry",
+      "type": "end",
+      "position": { "x": 1780, "y": 100 },
+      "data": {
+        "label": "Balance Inquiry",
+        "type": "end",
+        "task_messages": [
+          {
+            "role": "system",
+            "content": "Inform the customer that their current account balance is {{customer.data.balance}}. Thank them for using the service and end the conversation politely."
+          }
+        ],
+        "post_actions": [
+          { "type": "end_conversation" }
+        ]
+      }
+    },
+    {
+      "id": "atm_pin_change",
+      "type": "node",
+      "position": { "x": 1780, "y": 300 },
+      "data": {
+        "label": "ATM PIN Change — Verify Card",
+        "type": "node",
+        "task_messages": [
+          {
+            "role": "system",
+            "content": "To proceed with the ATM PIN change, ask the customer to provide the last 4 digits of their registered debit/ATM card. The card number on record ends with: the last 4 characters of {{customer.data.card_number}}. Compare only those last 4 digits against what the customer provides. If they match, call card_digits_matched. If they do not match, call card_digits_failed."
+          }
+        ],
+        "functions": [
+          {
+            "name": "card_digits_matched",
+            "description": "The last 4 card digits provided by the customer match the record",
+            "properties": {
+              "provided_digits": {
+                "type": "string",
+                "description": "The last 4 card digits the customer provided"
+              }
+            },
+            "required": ["provided_digits"],
+            "next_node_id": "end"
+          },
+          {
+            "name": "card_digits_failed",
+            "description": "The last 4 card digits provided by the customer do not match the record",
+            "properties": {
+              "provided_digits": {
+                "type": "string",
+                "description": "The incorrect card digits the customer provided"
+              }
+            },
+            "required": ["provided_digits"],
+            "next_node_id": "verification_failed"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mobile_pin_change",
+      "type": "end",
+      "position": { "x": 1780, "y": 500 },
+      "data": {
+        "label": "Mobile PIN Change",
+        "type": "end",
+        "task_messages": [
+          {
+            "role": "system",
+            "content": "Inform the customer that their mobile app PIN change request has been received and will be processed shortly. Thank them for using the service and end the conversation politely."
+          }
+        ],
+        "post_actions": [
+          { "type": "end_conversation" }
+        ]
+      }
+    },
+    {
+      "id": "verification_failed",
+      "type": "end",
+      "position": { "x": 1500, "y": 520 },
+      "data": {
+        "label": "Verification Failed",
+        "type": "end",
+        "task_messages": [
+          {
+            "role": "system",
+            "content": "Inform the customer that their identity could not be verified due to incorrect information. Advise them to visit the nearest branch with valid identification documents for further assistance. End the conversation politely."
+          }
+        ],
+        "post_actions": [
+          { "type": "end_conversation" }
+        ]
+      }
+    },
+    {
+      "id": "end",
+      "type": "end",
+      "position": { "x": 2060, "y": 300 },
+      "data": {
+        "label": "End",
+        "type": "end",
+        "task_messages": [
+          {
+            "role": "system",
+            "content": "Thank the customer for completing the ATM PIN change process. Let them know their request is being handled and wish them a great day. End the conversation politely."
+          }
+        ],
+        "post_actions": [
+          { "type": "end_conversation" }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "func-initial-submit_cnic-fetch_customer",
+      "source": "initial",
+      "target": "fetch_customer",
+      "label": "submit_cnic"
+    },
+    {
+      "id": "func-fetch_customer-http_request-verify_name",
+      "source": "fetch_customer",
+      "target": "verify_name",
+      "label": "http_request"
+    },
+    {
+      "id": "func-verify_name-name_matched-verify_mother_name",
+      "source": "verify_name",
+      "target": "verify_mother_name",
+      "label": "name_matched"
+    },
+    {
+      "id": "func-verify_name-name_failed-verification_failed",
+      "source": "verify_name",
+      "target": "verification_failed",
+      "label": "name_failed"
+    },
+    {
+      "id": "func-verify_mother_name-mother_name_matched-verify_dob",
+      "source": "verify_mother_name",
+      "target": "verify_dob",
+      "label": "mother_name_matched"
+    },
+    {
+      "id": "func-verify_mother_name-mother_name_failed-verification_failed",
+      "source": "verify_mother_name",
+      "target": "verification_failed",
+      "label": "mother_name_failed"
+    },
+    {
+      "id": "func-verify_dob-dob_matched-service_selection",
+      "source": "verify_dob",
+      "target": "service_selection",
+      "label": "dob_matched"
+    },
+    {
+      "id": "func-verify_dob-dob_failed-verification_failed",
+      "source": "verify_dob",
+      "target": "verification_failed",
+      "label": "dob_failed"
+    },
+    {
+      "id": "func-service_selection-select_balance_inquiry-balance_inquiry",
+      "source": "service_selection",
+      "target": "balance_inquiry",
+      "label": "select_balance_inquiry"
+    },
+    {
+      "id": "func-service_selection-select_atm_pin_change-atm_pin_change",
+      "source": "service_selection",
+      "target": "atm_pin_change",
+      "label": "select_atm_pin_change"
+    },
+    {
+      "id": "func-service_selection-select_mobile_pin_change-mobile_pin_change",
+      "source": "service_selection",
+      "target": "mobile_pin_change",
+      "label": "select_mobile_pin_change"
+    },
+    {
+      "id": "func-atm_pin_change-card_digits_matched-end",
+      "source": "atm_pin_change",
+      "target": "end",
+      "label": "card_digits_matched"
+    },
+    {
+      "id": "func-atm_pin_change-card_digits_failed-verification_failed",
+      "source": "atm_pin_change",
+      "target": "verification_failed",
+      "label": "card_digits_failed"
+    }
+  ]
+}
