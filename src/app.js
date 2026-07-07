@@ -5,6 +5,7 @@ const morgan = require('morgan');
 
 const appointmentRoutes = require('./routes/appointmentRoutes');
 const customerRoutes = require('./routes/customerRoutes');
+const userRoutes = require('./routes/userRoutes');
 const errorHandler = require('./middleware/errorHandler');
 const AppError = require('./utils/AppError');
 const env = require('./config/env');
@@ -20,6 +21,7 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/customers', customerRoutes);
+app.use('/api/users', userRoutes);
 
 app.use((req, res, next) => next(new AppError(`Route not found: ${req.method} ${req.originalUrl}`, 404)));
 
